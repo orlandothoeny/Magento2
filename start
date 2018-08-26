@@ -3,6 +3,9 @@ sudo ifconfig lo0 alias 10.254.254.254
 docker-sync start && \
 docker-compose up -d && \
 version=$(git describe --tags $(git rev-list --tags --max-count=1))
+
+project_name="$(bash "project/scripts/get-config-value.sh" "general_project_name")"
+local_domain="$(bash "project/scripts/get-config-value.sh" "general_local_domain")"
 echo "
 ===================== 🚀 Done 🚀 ===================
 
@@ -10,8 +13,8 @@ echo "
       v.$version
       Access your new links:
 
-      🌎 Web server: http://localhost/
-      ⚙️ PHPMyAdmin: http://localhost:8080
-      ✉️ Local emails: http://localhost:8025
+      🌎 Web server: http://local.${project_name}.${local_domain}/
+      ⚙️ PHPMyAdmin: http://local.phpmyadmin.${project_name}.${local_domain}:8080
+      ✉️ Local emails: http://local.mailhog.${project_name}.${local_domain}:8025
 
 ===================== 🚀 Done 🚀 ==================="

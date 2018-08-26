@@ -1,30 +1,94 @@
 #!/usr/bin/env bash
-if [ $@ ]; then
-  composer create-project --repository-url=https://repo.magento.com/ magento/project-community-edition:$1 . ;
-else
-  composer create-project --repository-url=https://repo.magento.com/ magento/project-community-edition . ;
+
+if [ ! -d "/var/www/project" ]; then
+  echo "The '/var/www/project' directory does not exist on the Apache Docker container. Cannot read configuration. Aborting Magento installation. project-sync Docker file system sync possibly not working properly. Or 'project' directory is missing on host system."
+  exit 1
 fi
-chmod u+w -R ./var ./vendor ./pub/static ./pub/media ./app/etc \
-&& chmod u+x ./bin/magento \
-&& php -f ./bin/magento setup:install --base-url=http://localhost/ \
-    --db-host=db \
-    --db-name=magento \
-    --db-user=magento \
-    --db-password=magento \
-    --admin-firstname=Magento \
-    --admin-lastname=Commerce \
-    --admin-email=user@example.com \
-    --admin-user=admin \
-    --admin-password=admin123 \
-    --language=en_US \
-    --currency=USD \
-    --timezone=America/Chicago \
-    --use-rewrites=1 \
-    --use-sample-data \
-    --backend-frontname=admin \
-    --use-sample-data \
-&& mv ./app/etc/env.php ./app/etc/env.original.php;
-cp -rv /var/www/env.sample.php ./app/etc/env.php;
+
+echo "Reading configuration values."
+composer_project_name="$(bash "/var/www/project/scripts/get-config-value.sh" "composer_project_create_name")"
+composer_project_version="$(bash "/var/www/project/scripts/get-config-value.sh" "composer_project_create_version)"
+composer_project_url="$(bash "/var/www/project/scripts/get-config-value.sh" "composer_project_create_url")"
+
+project_name="$(bash "/var/www/project/scripts/get-config-value.sh" "general_project_name")"
+local_domain="$(bash "/var/www/project/scripts/get-config-value.sh" "general_local_domain")"
+
+magento_mode="$(bash "/var/www/project/scripts/get-config-value.sh" "magento_mode")"
+
+magento_db_name="$(bash "/var/www/project/scripts/get-config-value.sh" "magento_db_name")"
+magento_db_user="$(bash "/var/www/project/scripts/get-config-value.sh" "magento_db_user")"
+magento_db_password="$(bash "/var/www/project/scripts/get-config-value.sh" "magento_db_password")"
+
+magento_admin_user="$(bash "/var/www/project/scripts/get-config-value.sh" "magento_admin_user")"
+magento_admin_email="$(bash "/var/www/project/scripts/get-config-value.sh" "magento_admin_email")"
+magento_admin_firstname="$(bash "/var/www/project/scripts/get-config-value.sh" "magento_admin_firstname")"
+magento_admin_lastname="$(bash "/var/www/project/scripts/get-config-value.sh" "magento_admin_lastname")"
+magento_admin_password="$(bash "/var/www/project/scripts/get-config-value.sh" "magento_admin_password")"
+
+magento_language="$(bash "/var/www/project/scripts/get-config-value.sh" "magento_language")"
+magento_currency="$(bash "/var/www/project/scripts/get-config-value.sh" "magento_currency")"
+magento_timezone="$(bash "/var/www/project/scripts/get-config-value.sh" "magento_timezone")"
+magento_admin_frontname="$(bash "/var/www/project/scripts/get-config-value.sh" "magento_admin_frontname")"
+magento_use_sample_data="$(bash "/var/www/project/scripts/get-config-value.sh" "magento_use_sample_data")"
+
+if [ -f index.php ]; then
+    echo "Removing phpinfo() index.php file."
+    rm index.php
+fi
+
+echo "Creating new Magento composer project."
+if [ ! -z ${composer_project_url} ] && [ ! -z ${composer_project_name} ] && [ ! -z ${composer_project_version} ]; then
+    echo "Creating Magento project with repository url '${composer_project_url}' and package name '${composer_project_name}:${composer_project_version}'"
+    composer create-project --repository-url=${composer_project_url} ${composer_project_name}: . ;
+else
+    echo "Creating Magento project with repository url 'https://repo.magento.com/' and package name 'magento/project-community-edition}'"
+    composer create-project --repository-url=https://repo.magento.com/ magento/project-community-edition . ;
+fi
+
+if [ magento_use_sample_data == 1 ]; then
+    echo "Installing Magento with sample data."
+    chmod u+w -R ./var ./vendor ./pub/static ./pub/media ./app/etc \
+    && chmod u+x ./bin/magento \
+    && php -f ./bin/magento setup:install --base-url=http://local.${project_name}.${local_domain}/ \
+        --db-host=db \
+        --db-name=${magento_db_name} \
+        --db-user=${magento_db_user} \
+        --db-password=${magento_db_password} \
+        --admin-firstname=${magento_admin_firstname} \
+        --admin-lastname=${magento_admin_lastname} \
+        --admin-email=${magento_admin_email} \
+        --admin-user=${magento_admin_user} \
+        --admin-password=${magento_admin_password} \
+        --language=${magento_language} \
+        --currency=${magento_currency} \
+        --timezone=${magento_timezone} \
+        --use-rewrites=1 \
+        --backend-frontname=${admin_frontname} \
+        --use-sample-data \
+    && mv ./app/etc/env.php ./app/etc/env.original.php;
+else
+    echo "Installing Magento."
+    chmod u+w -R ./var ./vendor ./pub/static ./pub/media ./app/etc \
+    && chmod u+x ./bin/magento \
+    && php -f ./bin/magento setup:install --base-url=http://${magento_host_name}/ \
+        --db-host=db \
+        --db-name=${magento_db_name} \
+        --db-user=${magento_db_user} \
+        --db-password=${magento_db_password} \
+        --admin-firstname=${magento_admin_firstname} \
+        --admin-lastname=${magento_admin_lastname} \
+        --admin-email=${magento_admin_email} \
+        --admin-user=${magento_admin_user} \
+        --admin-password=${magento_admin_password} \
+        --language=${magento_language} \
+        --currency=${magento_currency} \
+        --timezone=${magento_timezone} \
+        --use-rewrites=1 \
+        --backend-frontname=${admin_frontname} \
+    && mv ./app/etc/env.php ./app/etc/env.original.php;
+fi
+
+cp -rv /var/www/env.default.php ./app/etc/env.php;
 n98 cron:install;
 php -f ./bin/magento indexer:set-mode schedule;
 cp ~/.composer/auth.json var/composer_home/auth.json \
@@ -34,15 +98,15 @@ cp ~/.composer/auth.json var/composer_home/auth.json \
 && php -f ./bin/magento cache:flush;
 mv package.json.sample package.json ; mv Gruntfile.js.sample Gruntfile.js;
 npm i;
-php -f ./bin/magento deploy:mode:set production \
+php -f ./bin/magento deploy:mode:set ${magento_mode} \
 && composer dump-autoload -o \
 && clear && echo "
 ===================== 🚀 Done 🚀 ===================
 
       Magento 2 Installed successfully!
 
-      🌎 Admin: http://localhost/admin
-      👤 User: admin
-      🔑 Password: admin123
+      🌎 Admin: http://${magento_host_name}\/${admin_frontname}
+      👤 User: ${magento_admin_user}
+      🔑 Password: ${magento_admin_password}
 
 ===================== 🚀 Done 🚀 ==================="

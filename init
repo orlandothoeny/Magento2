@@ -1,7 +1,4 @@
 #!/usr/bin/env bash
-if [ "$2" == "clone" ]; then
-  git clone https://github.com/clean-docker/Magento2.git $1 && cd $1;
-fi
 
 git config --global core.autocrlf false
 git config --global core.eol LF
@@ -10,16 +7,56 @@ git config --global diff.renamelimit 5000
 
 sudo chmod u+x ./*
 
-docker image pull rafaelcgstz/magento2
+project_name="$(bash "project/scripts/get-config-value.sh" "general_project_name")"
+local_domain="$(bash "project/scripts/get-config-value.sh" "general_local_domain")"
+
+echo "Creating host entries for Docker containers."
+declare -a docker_container_hostnames=("local.${project_name}.${local_domain}" "local.db.${project_name}.${local_domain}" "local.phpmyadmin.${project_name}.${local_domain}" "local.redis.${project_name}.${local_domain}" "local.redis-session.${project_name}.${local_domain}" "local.mailhog.${project_name}.${local_domain}")
+
+for docker_container_hostname in "${docker_container_hostnames[@]}"
+do
+   bash "project/scripts/add-hosts-entry.sh" "${docker_container_hostname}"
+done
+
+if [ -f docker-compose.yml ]
+then
+    echo "Creating new docker-compose.yml with configuration values."
+    rm docker-compose.yml && cp docker-compose.install.yml docker-compose.yml
+fi
+
+if [ -f docker-compose.yml ]
+then
+    echo "Creating new docker-compose-dev.yml with configuration values."
+    rm docker-compose-dev.yml && cp docker-compose-dev.install.yml docker-compose-dev.yml
+fi
+
+if [ -f docker-compose.yml ]
+then
+    echo "Creating new docker-sync.yml with configuration values."
+    rm docker-sync.yml && cp docker-sync.install.yml docker-sync.yml
+fi
+
+if [ -f docker-compose.yml ]
+then
+    echo "Creating new .docker/config/magento.conf with configuration values."
+    rm .docker/config/magento.conf && cp .docker/config/magento.install.conf .docker/config/magento.conf
+fi
 
 if [ "$(uname)" == "Darwin" ]; then
-  git checkout -f mac;
-  sed -i '' -e "s/<project_name>/$1/g" docker-compose.yml \
-  && sed -i '' -e "s/<project_name>/$1/g" docker-compose-dev.yml \
-  && sed -i '' -e "s/<project_name>/$1/g" docker-sync.yml
+  # TODO: Replace git branch switch
+  sed -i '' -e "s/<project_name>/${project_name}/g" docker-compose.yml \
+  && sed -i '' -e "s/<local_domain>/${local_domain}/g" docker-compose.yml \
+  && sed -i '' -e "s/<project_name>/${project_name}/g" docker-compose-dev.yml \
+  && sed -i '' -e "s/<project_name>/${project_name}/g" docker-sync.yml \
+  && sed -i '' -e "s/<project_name>/${project_name}/g" .docker/config/magento.conf
 else
-  git checkout -f master;
-  sed -i '' -e "s/<project_name>/$1/g" docker-compose.yml;
+  # TODO: Replace git branch switch
+  sed -i '' -e "s/<project_name>/${project_name}/g" docker-compose.yml \
+  && sed -i '' -e "s/<local_domain>/${local_domain}/g" docker-compose.yml \
+  && sed -i '' -e "s/<project_name>/${project_name}/g" .docker/config/magento.conf
 fi
+
+echo "Deleting existing Docker containers."
+docker-compose down
 
 bash start

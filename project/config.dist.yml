@@ -1,0 +1,24 @@
+general:
+  project_name: "magento-project"
+  local_domain: "localhost"
+
+composer_project_create:
+  name: "magento/project-community-edition"
+  version : "2.2.5"
+  url: "https://repo.magento.com"
+
+magento:
+  use_sample_data: 0
+  admin_frontname: "admin"
+  language: "de_CH"
+  timezone: "Europe/Zurich"
+  currency: "CHF"
+  admin_user: "admin"
+  admin_email: "user@example.com"
+  admin_firstname: "System"
+  admin_lastname: "Administrator"
+  admin_password: "cgRQrvRwGRzC4UUrxHqBmiNK"
+  db_name: "magento"
+  db_user: "magento"
+  db_password: "kiTEHCxiDsgYoGB2eBxZVeka"
+  mode: "developer"
