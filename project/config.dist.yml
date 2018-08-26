@@ -21,4 +21,5 @@ magento:
   db_name: "magento"
   db_user: "magento"
   db_password: "kiTEHCxiDsgYoGB2eBxZVeka"
+  db_root_password: 'vwRzzBauzLeLGvjfureE8zdN'
   mode: "developer"

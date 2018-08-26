@@ -10,6 +10,11 @@ sudo chmod u+x ./*
 project_name="$(bash "project/scripts/get-config-value.sh" "general_project_name")"
 local_domain="$(bash "project/scripts/get-config-value.sh" "general_local_domain")"
 
+db_root_password="$(bash "project/scripts/get-config-value.sh" "magento_db_root_password")"
+db_name="$(bash "project/scripts/get-config-value.sh" "magento_db_name")"
+db_user="$(bash "project/scripts/get-config-value.sh" "magento_db_user")"
+db_password="$(bash "project/scripts/get-config-value.sh" "magento_db_password")"
+
 echo "Creating host entries for Docker containers."
 declare -a docker_container_hostnames=("local.${project_name}.${local_domain}" "local.db.${project_name}.${local_domain}" "local.phpmyadmin.${project_name}.${local_domain}" "local.redis.${project_name}.${local_domain}" "local.redis-session.${project_name}.${local_domain}" "local.mailhog.${project_name}.${local_domain}")
 
@@ -46,6 +51,10 @@ if [ "$(uname)" == "Darwin" ]; then
   # TODO: Replace git branch switch
   sed -i '' -e "s/<project_name>/${project_name}/g" docker-compose.yml \
   && sed -i '' -e "s/<local_domain>/${local_domain}/g" docker-compose.yml \
+  && sed -i '' -e "s/<db_root_password>/${db_root_password}/g" docker-compose.yml \
+  && sed -i '' -e "s/<db_name>/${db_name}/g" docker-compose.yml \
+  && sed -i '' -e "s/<db_user>/${db_user}/g" docker-compose.yml \
+  && sed -i '' -e "s/<db_password>/${db_password}/g" docker-compose.yml \
   && sed -i '' -e "s/<project_name>/${project_name}/g" docker-compose-dev.yml \
   && sed -i '' -e "s/<project_name>/${project_name}/g" docker-sync.yml \
   && sed -i '' -e "s/<project_name>/${project_name}/g" .docker/config/magento.conf
@@ -53,6 +62,10 @@ else
   # TODO: Replace git branch switch
   sed -i '' -e "s/<project_name>/${project_name}/g" docker-compose.yml \
   && sed -i '' -e "s/<local_domain>/${local_domain}/g" docker-compose.yml \
+  && sed -i '' -e "s/<db_root_password>/${db_root_password}/g" docker-compose.yml \
+  && sed -i '' -e "s/<db_name>/${db_name}/g" docker-compose.yml \
+  && sed -i '' -e "s/<db_user>/${db_user}/g" docker-compose.yml \
+  && sed -i '' -e "s/<db_password>/${db_password}/g" docker-compose.yml \
   && sed -i '' -e "s/<project_name>/${project_name}/g" .docker/config/magento.conf
 fi
 

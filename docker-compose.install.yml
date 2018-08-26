@@ -3,6 +3,7 @@ version: '2'
 services:
   apache:
     build: .
+    container_name: magento2-apache
     hostname: "local.<project_name>.<local_domain>"
     ports:
       - "80:80" # web
@@ -29,10 +30,10 @@ services:
     ports:
      - 3300:3306
     environment:
-      - MYSQL_ROOT_PASSWORD=root
-      - MYSQL_DATABASE=magento
-      - MYSQL_USER=magento
-      - MYSQL_PASSWORD=magento
+      - MYSQL_ROOT_PASSWORD=<db_root_password>
+      - MYSQL_DATABASE=<db_name>
+      - MYSQL_USER=<db_user>
+      - MYSQL_PASSWORD=<db_password>
     volumes:
       - dbdata:/var/lib/mysql
     networks:
@@ -43,9 +44,9 @@ services:
     hostname: "local.phpmyadmin.<project_name>.<local_domain>"
     environment:
      - PMA_HOST=db
-     - PMA_USER=root
-     - PMA_PASSWORD=root
-     - MYSQL_ROOT_PASSWORD=root
+     - PMA_USER=<db_user>
+     - PMA_PASSWORD=<db_password>
+     - MYSQL_ROOT_PASSWORD=<db_root_password>
     ports:
      - 8080:80
     networks:
