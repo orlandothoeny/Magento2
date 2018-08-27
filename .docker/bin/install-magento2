@@ -7,7 +7,7 @@ fi
 
 echo "Reading configuration values."
 composer_project_name="$(bash "/var/www/project/scripts/get-config-value.sh" "composer_project_create_name")"
-composer_project_version="$(bash "/var/www/project/scripts/get-config-value.sh" "composer_project_create_version)"
+composer_project_version="$(bash "/var/www/project/scripts/get-config-value.sh" "composer_project_create_version")"
 composer_project_url="$(bash "/var/www/project/scripts/get-config-value.sh" "composer_project_create_url")"
 
 project_name="$(bash "/var/www/project/scripts/get-config-value.sh" "general_project_name")"
