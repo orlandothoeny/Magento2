@@ -63,14 +63,14 @@ if [ magento_use_sample_data == 1 ]; then
         --currency=${magento_currency} \
         --timezone=${magento_timezone} \
         --use-rewrites=1 \
-        --backend-frontname=${admin_frontname} \
+        --backend-frontname=${magento_admin_frontname} \
         --use-sample-data \
     && mv ./app/etc/env.php ./app/etc/env.original.php;
 else
     echo "Installing Magento."
     chmod u+w -R ./var ./vendor ./pub/static ./pub/media ./app/etc \
     && chmod u+x ./bin/magento \
-    && php -f ./bin/magento setup:install --base-url=http://${magento_host_name}/ \
+    && php -f ./bin/magento setup:install --base-url=http://${magento_admin_frontname}/ \
         --db-host=db \
         --db-name=${magento_db_name} \
         --db-user=${magento_db_user} \
@@ -84,7 +84,7 @@ else
         --currency=${magento_currency} \
         --timezone=${magento_timezone} \
         --use-rewrites=1 \
-        --backend-frontname=${admin_frontname} \
+        --backend-frontname=${magento_admin_frontname} \
     && mv ./app/etc/env.php ./app/etc/env.original.php;
 fi
 
