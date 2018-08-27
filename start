@@ -1,20 +1,56 @@
 #!/usr/bin/env bash
-sudo ifconfig lo0 alias 10.254.254.254
+
+# Starts the Docker containers
+# Arguments:
+#   --rebuild
+
+rebuildDockerfileAndStartContainers() {
+    echo "Rebuilding local Apache Docker image"
+    docker-sync start && \
+    docker-compose up -d --build \
+    && version=$(git describe --tags $(git rev-list --tags --max-count=1)) \
+    && echo "
+    ===================== 🚀 Done 🚀 ===================
+
+          Created by Rafael Corrêa Gomes
+          v.$version
+          Access your new links:
+
+          🌎 Web server: http://local.${project_name}.${local_domain}/
+          ⚙️ PHPMyAdmin: http://local.phpmyadmin.${project_name}.${local_domain}:8080
+          ✉️ Local emails: http://local.mailhog.${project_name}.${local_domain}:8025
+
+    ===================== 🚀 Done 🚀 ===================" \
+    || echo "Docker containers could not be started successfully."
+}
+
+startContainers() {
 docker-sync start && \
-docker-compose up -d && \
-version=$(git describe --tags $(git rev-list --tags --max-count=1))
+    docker-compose up -d \
+    && version=$(git describe --tags $(git rev-list --tags --max-count=1)) \
+    && echo "
+    ===================== 🚀 Done 🚀 ===================
+
+          Created by Rafael Corrêa Gomes
+          v.$version
+          Access your new links:
+
+          🌎 Web server: http://local.${project_name}.${local_domain}/
+          ⚙️ PHPMyAdmin: http://local.phpmyadmin.${project_name}.${local_domain}:8080
+          ✉️ Local emails: http://local.mailhog.${project_name}.${local_domain}:8025
+
+    ===================== 🚀 Done 🚀 ===================" \
+    || echo "Docker containers could not be started successfully."
+}
+
+sudo ifconfig lo0 alias 10.254.254.254
 
 project_name="$(bash "project/scripts/get-config-value.sh" "general_project_name")"
 local_domain="$(bash "project/scripts/get-config-value.sh" "general_local_domain")"
-echo "
-===================== 🚀 Done 🚀 ===================
 
-      Created by Rafael Corrêa Gomes
-      v.$version
-      Access your new links:
-
-      🌎 Web server: http://local.${project_name}.${local_domain}/
-      ⚙️ PHPMyAdmin: http://local.phpmyadmin.${project_name}.${local_domain}:8080
-      ✉️ Local emails: http://local.mailhog.${project_name}.${local_domain}:8025
-
-===================== 🚀 Done 🚀 ==================="
+if [ -z "${*}" ]
+then
+    startContainers
+else
+    expr "$*" : ".*--rebuild" > /dev/null && rebuildDockerfileAndStartContainers
+fi
